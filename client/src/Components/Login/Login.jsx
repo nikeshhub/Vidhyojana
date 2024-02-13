@@ -1,12 +1,46 @@
 import { Form, Formik } from "formik";
 import React from "react";
-import FormikInput from "./Formik/FormikInput";
+import FormikInput from "../Formik/FormikInput";
 import { MailFilled, LockFilled } from "@ant-design/icons";
 import { Checkbox, Space } from "antd";
-import { Link } from "react-router-dom";
-import logo from "../images/logo.png";
+import { Link, useNavigate } from "react-router-dom";
+import logo from "../../images/logo.png";
+import * as Yup from "yup";
+import axios from "axios";
 
 const Login = () => {
+  const navigate = useNavigate();
+  const initialValues = {
+    email: "",
+    password: "",
+  };
+
+  const validationSchema = Yup.object({
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
+    password: Yup.string()
+      .required("Password is required")
+      .min(6, "Password must be at least 6 characters"),
+  });
+
+  const handleSubmit = async (values) => {
+    try {
+      const response = await axios.post(
+        "http://localhost:8000/users/login",
+        values
+      );
+      //getting token from response.data
+      const authToken = response.data.token;
+
+      // setting the token in local storage
+      localStorage.setItem("authToken", authToken);
+      console.log(response.data);
+      navigate("/home");
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const formStyle = {
     backgroundColor: "#ffffff",
     boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
@@ -35,18 +69,16 @@ const Login = () => {
     cursor: "pointer",
     width: "100%",
     marginTop: "10px",
-    fontSize:"14px",
-    fontWeight:"bold"
+    fontSize: "14px",
+    fontWeight: "bold",
   };
 
   return (
     <div>
       <Formik
-        initialValues={{ email: "", password: "" }}
-        onSubmit={(values, actions) => {
-          console.log("Form submitted with values:", values);
-          actions.setSubmitting(false);
-        }}
+        initialValues={initialValues}
+        onSubmit={handleSubmit}
+        validationSchema={validationSchema}
       >
         {(formik) => (
           <Form style={formStyle}>
@@ -88,10 +120,18 @@ const Login = () => {
                 marginBottom: "10px",
               }}
             >
-              <Checkbox style={{ color: "#00367e", fontWeight: "bold" }}>
-                Remember me
-              </Checkbox>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  color: "#00367e",
+                }}
+              >
+                <input type="checkbox" /> Remember me
+              </label>
+
               <Link
+                to="/forgot-password"
                 style={{
                   fontSize: "14px",
                   textDecoration: "none",
@@ -120,7 +160,7 @@ const Login = () => {
             >
               <Space>
                 <p> Dont have an account?</p>
-                <Link> Sign Up</Link>
+                <Link to="/register"> Sign Up</Link>
               </Space>
             </div>
           </Form>

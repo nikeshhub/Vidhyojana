@@ -28,7 +28,7 @@ export let createUser = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Successfully added. Verification email sent.",
+      message: "Verification email has been sent to your email. Please verify your email to continue.",
       data: result,
     });
   } catch (error) {
